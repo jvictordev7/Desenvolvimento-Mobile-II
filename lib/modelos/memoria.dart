@@ -7,8 +7,11 @@ class Memoria {
   bool _limparVisor = false;
   String _valor = '0';
   String _ultimoComando = '';
+  bool _erro = false;
+  final String _mensagemErro = 'Erro';
 
   String get valorNoVisor {
+    if (_erro) return _mensagemErro;
     if (_buffer[1] == '') {
       return _formataNumero(_buffer.first as double);
     } else if (operacoes.contains(_ultimoComando)) {
@@ -26,6 +29,12 @@ class Memoria {
   }
 
   void tratarDigito(String comando) {
+    // Se estivermos em estado de erro e o usuario pressionar qualquer tecla
+    // diferente de 'C', limpar o estado para permitir nova entrada.
+    if (_erro && comando != 'C') {
+      _limpar();
+    }
+
     if (comando == '!') {
       _aplicaFatorial();
       return;
@@ -59,6 +68,7 @@ class Memoria {
     _limparVisor = false;
     _ehPrimeiroNumero = true;
     _ultimoComando = '';
+    _erro = false;
   }
 
   void _setOperacao(String novaOperacao) {
@@ -72,6 +82,18 @@ class Memoria {
       _limparVisor = true;
     } else {
       _buffer[0] = _computa();
+      // Se ocorreu erro durante a computacao (ex: divisão por zero), exibe
+      // mensagem amigavel e reseta estado para aguardar 'C' ou nova entrada.
+      if (_erro) {
+        _valor = _mensagemErro;
+        // limpa operador para nao continuar operacoes
+        _buffer[1] = '';
+        _buffer[2] = 0.0;
+        _ehPrimeiroNumero = true;
+        _limparVisor = true;
+        _ultimoComando = '';
+        return;
+      }
       _buffer[1] = ehSinalDeIgual ? '' : novaOperacao;
       _buffer[2] = 0.0;
       _valor = _formataNumero(_buffer[0] as double);
@@ -88,6 +110,11 @@ class Memoria {
       case '%':
         return primeiroNumero % segundoNumero;
       case '/':
+        if (segundoNumero == 0.0) {
+          // marca erro para exibicao no visor
+          _erro = true;
+          return 0.0;
+        }
         return primeiroNumero / segundoNumero;
       case '*':
         return primeiroNumero * segundoNumero;

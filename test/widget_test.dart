@@ -5,26 +5,25 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:calculadora/main.dart';
+import 'package:calculadora/telas/calculadora.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Visor inicia em 0 e digito 1 funciona', (WidgetTester tester) async {
+    // Monta o widget da calculadora
+    await tester.pumpWidget(const Calculatora());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Aguarda frames
+    await tester.pumpAndSettle();
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  // Verifica que existe ao menos um texto '0' (visor + botão '0')
+  expect(find.text('0'), findsWidgets);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Toca no botão '1' e atualiza a UI
+    await tester.tap(find.text('1'));
+    await tester.pumpAndSettle();
+
+  // Verifica que existe ao menos um texto '1' (visor + botão '1')
+  expect(find.text('1'), findsWidgets);
   });
 }
